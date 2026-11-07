@@ -25,11 +25,9 @@ export function DemoTourController({
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentSceneIndex, setCurrentSceneIndex] = useState(0);
   const [voiceEnabled, setVoiceEnabled] = useState(true);
-  const [voiceMode, setVoiceMode] = useState<'calibrated-tts' | 'user-recording'>('calibrated-tts');
   const [secondsRemaining, setSecondsRemaining] = useState(24);
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const userAudioRef = useRef<HTMLAudioElement | null>(null);
 
   const scenes: TourScene[] = [
     {
@@ -83,30 +81,20 @@ export function DemoTourController({
 
   const currentScene = scenes[currentSceneIndex];
 
-  // Calibrated Speech Synthesis (Matched to user's 43s audio profile: 0.98x pace, 0.95 pitch)
+  // Professional AI Speech Synthesis
   const speakNarration = (text: string) => {
     if (!voiceEnabled || typeof window === 'undefined' || !('speechSynthesis' in window)) return;
     window.speechSynthesis.cancel();
 
-    if (voiceMode === 'user-recording') {
-      if (userAudioRef.current) {
-        userAudioRef.current.currentTime = 0;
-        userAudioRef.current.play().catch((e) => console.log('Audio autoplay prevented', e));
-      }
-      return;
-    }
-
     const utterance = new SpeechSynthesisUtterance(text);
-    // Calibrated specifically to user's measured 102 WPM cadence and vocal timbre
-    utterance.rate = 0.98;
-    utterance.pitch = 0.95;
+    utterance.rate = 1.0;
+    utterance.pitch = 1.0;
     utterance.lang = 'en-US';
 
     const voices = window.speechSynthesis.getVoices();
-    // Prioritize natural English voice
     const naturalVoice = voices.find(
       (v) =>
-        (v.name.includes('Natural') || v.name.includes('David') || v.name.includes('Google') || v.name.includes('Guy')) &&
+        (v.name.includes('Natural') || v.name.includes('Google') || v.name.includes('David') || v.name.includes('Guy')) &&
         v.lang.startsWith('en')
     );
     if (naturalVoice) utterance.voice = naturalVoice;
@@ -119,7 +107,6 @@ export function DemoTourController({
     const scene = scenes[index];
     setSecondsRemaining(scene.durationSeconds);
 
-    // Scroll to target
     if (scene.targetId) {
       const el = document.getElementById(scene.targetId);
       if (el) {
@@ -127,7 +114,6 @@ export function DemoTourController({
       }
     }
 
-    // Trigger action if any
     if (scene.action) {
       scene.action();
     }
@@ -137,15 +123,11 @@ export function DemoTourController({
     }
   };
 
-  // Timer loop for auto tour
   useEffect(() => {
     if (!isPlaying) {
       if (timerRef.current) clearInterval(timerRef.current);
       if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
         window.speechSynthesis.cancel();
-      }
-      if (userAudioRef.current) {
-        userAudioRef.current.pause();
       }
       return;
     }
@@ -170,7 +152,7 @@ export function DemoTourController({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isPlaying, currentSceneIndex, voiceMode]);
+  }, [isPlaying, currentSceneIndex]);
 
   const handleStartTour = () => {
     setIsOpen(true);
@@ -183,16 +165,10 @@ export function DemoTourController({
     if (typeof window !== 'undefined' && 'speechSynthesis' in window) {
       window.speechSynthesis.cancel();
     }
-    if (userAudioRef.current) {
-      userAudioRef.current.pause();
-    }
   };
 
   return (
     <>
-      {/* Hidden audio element pointing to the user's uploaded voice sample */}
-      <audio ref={userAudioRef} src="/user-voice-sample.mp4" preload="auto" />
-
       {/* Floating Launcher Button */}
       <button
         onClick={() => {
@@ -206,47 +182,13 @@ export function DemoTourController({
           <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
           <span className="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
         </span>
-        <span>▶ 2-Minute Demo Video Studio (Voice Calibrated)</span>
+        <span>▶ 2-Minute Demo Video Studio</span>
       </button>
 
       {/* Guided Tour Bottom HUD Teleprompter */}
       {isOpen && (
         <div className="fixed bottom-0 inset-x-0 z-50 bg-slate-950/95 border-t border-cyan-500/40 backdrop-blur-xl p-4 shadow-2xl text-slate-100 animate-in slide-in-from-bottom duration-200">
           <div className="max-w-5xl mx-auto flex flex-col gap-3">
-            {/* Voice Calibration Profile Pill */}
-            <div className="flex flex-wrap items-center justify-between gap-2 bg-slate-900/90 border border-cyan-500/30 rounded-lg px-3 py-1.5 text-[11px]">
-              <div className="flex items-center gap-2 text-cyan-300">
-                <span className="size-2 rounded-full bg-cyan-400 animate-pulse" />
-                <span className="font-semibold">Analyzed Voice Profile:</span>
-                <span className="text-slate-300">Measured 102 WPM cadence · Rate 0.98x · Pitch 0.95 · 48kHz</span>
-              </div>
-              
-              {/* Voice Source Selector */}
-              <div className="flex items-center gap-1.5">
-                <span className="text-slate-400">Audio Track:</span>
-                <button
-                  onClick={() => setVoiceMode('calibrated-tts')}
-                  className={`px-2 py-0.5 rounded font-medium cursor-pointer transition-colors ${
-                    voiceMode === 'calibrated-tts'
-                      ? 'bg-cyan-500 text-slate-950 font-bold'
-                      : 'bg-slate-800 text-slate-300 hover:text-white'
-                  }`}
-                >
-                  🎙️ Calibrated Voice (All 5 Scenes)
-                </button>
-                <button
-                  onClick={() => setVoiceMode('user-recording')}
-                  className={`px-2 py-0.5 rounded font-medium cursor-pointer transition-colors ${
-                    voiceMode === 'user-recording'
-                      ? 'bg-purple-500 text-white font-bold'
-                      : 'bg-slate-800 text-slate-300 hover:text-white'
-                  }`}
-                >
-                  🎧 Your Actual Recorded Audio
-                </button>
-              </div>
-            </div>
-
             {/* Top Bar with Timeline and Controls */}
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-800 pb-2.5">
               <div className="flex items-center gap-3">
@@ -265,7 +207,6 @@ export function DemoTourController({
                     setVoiceEnabled(!voiceEnabled);
                     if (voiceEnabled && typeof window !== 'undefined') {
                       window.speechSynthesis.cancel();
-                      if (userAudioRef.current) userAudioRef.current.pause();
                     }
                   }}
                   className={`px-2.5 py-1 rounded text-xs font-medium border transition-colors cursor-pointer ${
@@ -275,7 +216,7 @@ export function DemoTourController({
                   }`}
                   title="Toggle automated speech narration"
                 >
-                  {voiceEnabled ? '🔊 Audio: ON' : '🔇 Audio: OFF'}
+                  {voiceEnabled ? '🔊 Voice Narration: ON' : '🔇 Voice Narration: OFF'}
                 </button>
 
                 {/* Play / Pause */}
@@ -326,7 +267,7 @@ export function DemoTourController({
             {/* Teleprompter Voiceover Text */}
             <div className="bg-slate-900/80 rounded-lg p-3 border border-slate-800/80 flex items-start gap-3">
               <span className="text-cyan-400 font-bold text-xs shrink-0 mt-0.5">
-                🎙️ Teleprompter / Narration:
+                🎙️ Voiceover Script:
               </span>
               <p className="text-xs text-slate-200 leading-relaxed font-medium">
                 &ldquo;{currentScene.narration}&rdquo;
@@ -354,7 +295,7 @@ export function DemoTourController({
 
               <div className="flex items-center gap-2">
                 <span className="text-amber-300 font-medium">
-                  💡 Tip: Press <strong>Win + Alt + R</strong> to start recording!
+                  💡 Tip: Press <strong>Win + Alt + R</strong> on your keyboard to start recording!
                 </span>
                 <span className="font-mono text-cyan-300 font-bold">
                   Next scene in: {secondsRemaining}s
