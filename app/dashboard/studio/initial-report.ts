@@ -395,8 +395,83 @@ const catalogue: AgPageState = {
     'catalogue-sunburst': at(16, 27, 8, 24),
   },
 };
+const revenueLeaks: AgPageState = {
+  id: 'revenue-leaks',
+  widgets: {
+    'kpi-refunds': kpi(
+      'Observed Returns & Drain',
+      sum('invoices.refundedAmount'),
+      'calendar::month',
+    ),
+    'kpi-overdue': kpi(
+      'Uncollected Overdue ARR',
+      sum('invoices.overdueAmount'),
+    ),
+    'kpi-net-cash': kpi(
+      'Net Realized Cash',
+      sum('invoices.netCollected'),
+      'calendar::month',
+    ),
+    'aging-hotspots': {
+      type: 'column-chart-stacked',
+      dataMapping: {
+        categoryKey: [{ id: 'invoices.agingBucket' }],
+        valueKey: [sum('invoices.overdueAmount')],
+        legendKey: [{ id: 'invoices.currency' }],
+      },
+      format: {
+        ...title('Overdue Capital Aging Buckets'),
+        style: { theme: { common: { legend: { enabled: true } } } },
+      },
+    },
+    'transaction-breakdown': {
+      type: 'donut-chart',
+      dataMapping: {
+        categoryKey: [{ id: 'transactions.eventType' }],
+        valueKey: [countd('transactions.id')],
+      },
+      format: {
+        ...title('Transaction Events Distribution'),
+        style: {
+          custom: {
+            pieDataLabel: { enabled: true },
+            totalLabel: { enabled: false },
+          },
+        },
+      },
+    },
+    'audit-ledger': {
+      type: 'grid',
+      dataMapping: {
+        cols: [
+          { id: 'transactions.id' },
+          { id: 'transactions.date' },
+          { id: 'transactions.eventType' },
+          { id: 'transactions.status' },
+          { id: 'transactions.direction' },
+          sum('transactions.amount'),
+          sum('transactions.fee'),
+          sum('transactions.net'),
+          { id: 'transactions.counterparty' },
+          { id: 'transactions.note' },
+        ],
+      },
+      sort: [{ field: sum('transactions.amount'), direction: 'asc' }],
+      format: title('LeakLens Audit Ledger: Returns, Debits & Payouts'),
+    },
+  },
+  widgetLayout: {
+    'kpi-refunds': at(0, 0, 8, 7),
+    'kpi-overdue': at(8, 0, 8, 7),
+    'kpi-net-cash': at(16, 0, 8, 7),
+    'aging-hotspots': at(0, 7, 14, 18),
+    'transaction-breakdown': at(14, 7, 10, 18),
+    'audit-ledger': at(0, 25, 24, 25),
+  },
+};
+
 // The report opens on its first page.
 export const dashboardReport: AgReportState = {
-  selectedPageId: revenue.id,
-  pages: [revenue, receivables, cash, catalogue],
+  selectedPageId: revenueLeaks.id,
+  pages: [revenueLeaks, revenue, receivables, cash, catalogue],
 };

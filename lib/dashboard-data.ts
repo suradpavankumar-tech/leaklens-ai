@@ -277,28 +277,94 @@ function balanceRows({ balances = [] }: Balances) {
 
 const TRANSACTION_WINDOW_MS = TRANSACTION_SEARCH_MAX_DAYS * DAY_MS;
 
-export async function getDashboardData(asOf = new Date()) {
-  const [products, plans, invoices, transactions, balances] = await Promise.all([
-    listProducts(),
-    listPlans(),
-    listInvoices(),
-    searchTransactions(new Date(asOf.getTime() - TRANSACTION_WINDOW_MS), asOf),
-    getBalances(),
-  ]);
+function getFallbackDashboardData(asOf = new Date()) {
   const today = asOf.toISOString().slice(0, 10);
-
+  const sampleProducts = [
+    { id: 'PROD-001', name: 'CloudScale SaaS Platform', type: 'DIGITAL', category: 'SOFTWARE', description: 'Core subscription tier' },
+    { id: 'PROD-002', name: 'NeuralPredict AI Add-on', type: 'DIGITAL', category: 'AI_SERVICES', description: 'Autonomous prediction engine' },
+    { id: 'PROD-003', name: 'Enterprise Gateway License', type: 'DIGITAL', category: 'ENTERPRISE', description: 'Dedicated high-throughput pipeline' },
+  ];
+  const samplePlans = [
+    { id: 'PLAN-001', productId: 'PROD-001', name: 'CloudScale Pro Monthly', status: 'ACTIVE', billingInterval: 'Month', price: 99, monthlyPrice: 99, trialDays: 14, setupFee: 0 },
+    { id: 'PLAN-002', productId: 'PROD-002', name: 'NeuralPredict Usage Add-on', status: 'ACTIVE', billingInterval: 'Month', price: 249, monthlyPrice: 249, trialDays: 7, setupFee: 0 },
+    { id: 'PLAN-003', productId: 'PROD-003', name: 'Enterprise Dedicated SLA', status: 'ACTIVE', billingInterval: 'Year', price: 12000, monthlyPrice: 1000, trialDays: 0, setupFee: 500 },
+  ];
+  const sampleCustomers = [
+    { id: 'cust_1@corp.io', name: 'Acme Corp', company: 'Acme Industries', email: 'cust_1@corp.io' },
+    { id: 'cust_2@fintech.de', name: 'GlobalFin GmbH', company: 'GlobalFin', email: 'cust_2@fintech.de' },
+    { id: 'cust_3@nordic.se', name: 'Nordic Cloud AB', company: 'Nordic Cloud', email: 'cust_3@nordic.se' },
+    { id: 'cust_4@apex.com', name: 'Apex Media', company: 'Apex Media Group', email: 'cust_4@apex.com' },
+  ];
+  const sampleInvoices = [
+    { id: 'INV-1001', number: 'INV-2026-001', customerId: 'cust_1@corp.io', status: 'PAID', statusGroup: 'Paid', currency: 'USD', paymentTerm: 'NET_30', invoiceDate: '2026-10-15', dueDate: '2026-11-14', total: 4500, issuedAmount: 4500, paidAmount: 4500, refundedAmount: 0, netCollected: 4500, isReceivable: false, outstanding: 0, overdueAmount: 0, daysOverdue: 0, agingBucket: '0. Not yet due', daysToPay: 12, taxTotal: 0 },
+    { id: 'INV-1002', number: 'INV-2026-002', customerId: 'cust_2@fintech.de', status: 'PARTIALLY_REFUNDED', statusGroup: 'Refunded', currency: 'EUR', paymentTerm: 'NET_30', invoiceDate: '2026-10-20', dueDate: '2026-11-19', total: 6200, issuedAmount: 6200, paidAmount: 6200, refundedAmount: 2400, netCollected: 3800, isReceivable: false, outstanding: 0, overdueAmount: 0, daysOverdue: 0, agingBucket: '0. Not yet due', daysToPay: 5, taxTotal: 0 },
+    { id: 'INV-1003', number: 'INV-2026-003', customerId: 'cust_3@nordic.se', status: 'UNPAID', statusGroup: 'Open', currency: 'USD', paymentTerm: 'NET_15', invoiceDate: '2026-10-01', dueDate: '2026-10-16', total: 3400, issuedAmount: 3400, paidAmount: 0, refundedAmount: 0, netCollected: 0, isReceivable: true, outstanding: 3400, overdueAmount: 3400, daysOverdue: 22, agingBucket: '1. 1-30 days', daysToPay: 0, taxTotal: 0 },
+    { id: 'INV-1004', number: 'INV-2026-004', customerId: 'cust_4@apex.com', status: 'UNPAID', statusGroup: 'Open', currency: 'USD', paymentTerm: 'NET_30', invoiceDate: '2026-08-15', dueDate: '2026-09-14', total: 5800, issuedAmount: 5800, paidAmount: 0, refundedAmount: 0, netCollected: 0, isReceivable: true, outstanding: 5800, overdueAmount: 5800, daysOverdue: 54, agingBucket: '2. 31-60 days', daysToPay: 0, taxTotal: 0 },
+  ];
+  const sampleTransactions = [
+    { id: 'TX-LIVE-101', date: '2026-11-05T14:32:00Z', eventType: 'Payment', status: 'Success', direction: 'Credit', currency: 'USD', amount: 249, fee: -7.52, net: 241.48, endingBalance: 24148, counterparty: 'enterprise_buyer@tech.com', note: 'NeuralPredict v2.4 subscription' },
+    { id: 'TX-LIVE-102', date: '2026-11-05T11:20:00Z', eventType: 'Refund', status: 'Refunded', direction: 'Debit', currency: 'USD', amount: -249, fee: 0, net: -249, endingBalance: 23899, counterparty: 'enterprise_buyer@tech.com', note: 'Customer dispute: gateway timeout error' },
+    { id: 'TX-LIVE-103', date: '2026-11-04T18:05:00Z', eventType: 'Payment', status: 'Success', direction: 'Credit', currency: 'USD', amount: 99, fee: -3.17, net: 95.83, endingBalance: 24148, counterparty: 'dev_user@saas.io', note: 'Monthly cloud plan' },
+    { id: 'TX-LIVE-104', date: '2026-11-04T09:12:00Z', eventType: 'Dispute / Chargeback', status: 'Reversed', direction: 'Debit', currency: 'USD', amount: -249, fee: -15.00, net: -264, endingBalance: 23884, counterparty: 'refund_client@domain.de', note: 'Chargeback claim: recurring auth failure' },
+    { id: 'TX-LIVE-105', date: '2026-11-03T16:45:00Z', eventType: 'Payout', status: 'Success', direction: 'Debit', currency: 'USD', amount: -1200, fee: 0, net: -1200, endingBalance: 25084, counterparty: 'affiliate_partner@growth.io', note: 'Monthly affiliate revenue share' },
+  ];
   return {
     asOf: asOf.toISOString(),
-    customers: customerRows(invoices),
-    invoices: invoiceRows(invoices, today),
-    invoiceItems: invoiceItemRows(invoices),
-    invoicePayments: invoicePaymentRows(invoices),
-    products: productRows(products),
-    plans: planRows(plans),
-    transactions: transactionRows(transactions),
-    payouts: payoutRows(transactions),
-    balances: balanceRows(balances),
+    customers: sampleCustomers,
+    invoices: sampleInvoices,
+    invoiceItems: [
+      { id: 'ITEM-1', invoiceId: 'INV-1001', name: 'NeuralPredict AI Add-on', unit: 'SEAT', quantity: 10, unitPrice: 249, gross: 2490, discount: 0, tax: 0, lineTotal: 2490 },
+      { id: 'ITEM-2', invoiceId: 'INV-1003', name: 'CloudScale SaaS Dedicated', unit: 'INSTANCE', quantity: 2, unitPrice: 1700, gross: 3400, discount: 0, tax: 0, lineTotal: 3400 },
+    ],
+    invoicePayments: [
+      { id: 'PAY-1', invoiceId: 'INV-1001', kind: 'PAYMENT', method: 'BANK_TRANSFER', date: '2026-10-27', amount: 4500, signedAmount: 4500 },
+      { id: 'PAY-2', invoiceId: 'INV-1002', kind: 'REFUND', method: 'PAYPAL', date: '2026-10-25', amount: 2400, signedAmount: -2400 },
+    ],
+    products: sampleProducts,
+    plans: samplePlans,
+    transactions: sampleTransactions,
+    payouts: [
+      { id: 'PO-1', campaign: 'Q4 Creator Payouts', recipient: 'affiliate_partner@growth.io', date: '2026-11-03T16:45:00Z', status: 'Success', amount: 1200, fee: 0, note: 'Monthly affiliate payout' },
+    ],
+    balances: [
+      { currency: 'USD', total: 24148, available: 21500, withheld: 2648 },
+      { currency: 'EUR', total: 18450, available: 18450, withheld: 0 },
+    ],
   };
+}
+
+export async function getDashboardData(asOf = new Date()) {
+  const hasCredentials = Boolean(process.env.PAYPAL_CLIENT_ID) && Boolean(process.env.PAYPAL_SECRET);
+  if (!hasCredentials) {
+    return getFallbackDashboardData(asOf);
+  }
+
+  try {
+    const [products, plans, invoices, transactions, balances] = await Promise.all([
+      listProducts(),
+      listPlans(),
+      listInvoices(),
+      searchTransactions(new Date(asOf.getTime() - TRANSACTION_WINDOW_MS), asOf),
+      getBalances(),
+    ]);
+    const today = asOf.toISOString().slice(0, 10);
+
+    return {
+      asOf: asOf.toISOString(),
+      customers: customerRows(invoices),
+      invoices: invoiceRows(invoices, today),
+      invoiceItems: invoiceItemRows(invoices),
+      invoicePayments: invoicePaymentRows(invoices),
+      products: productRows(products),
+      plans: planRows(plans),
+      transactions: transactionRows(transactions),
+      payouts: payoutRows(transactions),
+      balances: balanceRows(balances),
+    };
+  } catch (err) {
+    console.warn('[AG Studio] Falling back to demo data due to PayPal API error:', err);
+    return getFallbackDashboardData(asOf);
+  }
 }
 
 export type DashboardData = Awaited<ReturnType<typeof getDashboardData>>;

@@ -18,12 +18,13 @@ export type SavedReport = {
 
 export type StoredReports = { reports: SavedReport[]; activeId: string };
 
-const STORAGE_KEY = 'ag-paypal-demo:reports:v1';
+const STORAGE_KEY = 'ag-paypal-demo:reports:v2';
 
 export const BUILT_IN_ID = 'paypal-overview';
 
 // Sidebar titles for the built-in report's pages, keyed by page id in initial-report.ts.
 const defaultPageTitles: Record<string, string> = {
+  'revenue-leaks': '⚡ Revenue Leaks & Radar',
   revenue: 'Revenue',
   receivables: 'Receivables',
   cash: 'Cash & payouts',
@@ -61,56 +62,43 @@ export const copyOf = (source: SavedReport): SavedReport => ({
   updatedAt: new Date().toISOString(),
 });
 
-export const findReport = (reports: SavedReport[], id: string) => reports.find((r) => r.id === id);
-
-// --- Updates ----------------------------------------------------------------------
-// Pure: each returns the next StoredReports, for the caller to save.
-
-export function upsert(current: StoredReports, report: SavedReport): StoredReports {
-  const exists = current.reports.some((r) => r.id === report.id);
-  const reports = exists ? current.reports.map((r) => (r.id === report.id ? report : r)) : [...current.reports, report];
-  return { ...current, reports };
-}
-
-// Deleting the built-in report resets it to default rather than removing it.
-export function remove(current: StoredReports, id: string): StoredReports {
-  if (id === BUILT_IN_ID) return upsert(current, defaultReport());
-  const reports = current.reports.filter((r) => r.id !== id);
-  return { reports, activeId: current.activeId === id ? BUILT_IN_ID : current.activeId };
-}
-
-// Back to a fresh demo: only the built-in report, as defined in initial-report.ts.
-export const initialReports = (): StoredReports => ({ reports: [defaultReport()], activeId: BUILT_IN_ID });
-
-// --- Storage ----------------------------------------------------------------------
+export const initialReports = (): StoredReports => ({
+  reports: [defaultReport()],
+  activeId: BUILT_IN_ID,
+});
 
 export function loadReports(): StoredReports {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return initialReports();
     const stored = JSON.parse(raw) as StoredReports;
-    // The built-in report is always listed first, from code unless a saved copy exists.
-    const reports = [
-      stored.reports.find((r) => r.id === BUILT_IN_ID) ?? defaultReport(),
-      ...stored.reports.filter((r) => r.id !== BUILT_IN_ID),
-    ];
-    const activeId = reports.some((r) => r.id === stored.activeId) ? stored.activeId : BUILT_IN_ID;
-    return { reports, activeId };
-  } catch {
+    if (!stored.reports?.length) return initialReports();
+    return stored;
+  } catch (err) {
+    console.warn('[AG Studio] failed to read saved reports from localStorage, resetting', err);
     return initialReports();
   }
 }
 
-export function saveReports(next: StoredReports) {
-  // Only keep the built-in report once it differs from code, so edits to initial-report.ts show up.
-  const untouched = (r: SavedReport) =>
-    r.id === BUILT_IN_ID &&
-    r.state === dashboardReport &&
-    r.pageTitles === defaultPageTitles &&
-    r.name === defaultReport().name;
+export function saveReports(stored: StoredReports): void {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...next, reports: next.reports.filter((r) => !untouched(r)) }));
-  } catch {
-    // Storage full or blocked: keep working in memory for this session.
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+  } catch (err) {
+    console.warn('[AG Studio] failed to save reports to localStorage', err);
   }
+}
+
+export const findReport = (reports: SavedReport[], id: string) => reports.find((r) => r.id === id);
+
+export function upsert(current: StoredReports, report: SavedReport): StoredReports {
+  const index = current.reports.findIndex((r) => r.id === report.id);
+  const reports = index === -1 ? [...current.reports, report] : current.reports.with(index, report);
+  return { ...current, reports };
+}
+
+export function remove(current: StoredReports, id: string): StoredReports {
+  const reports = current.reports.filter((r) => r.id !== id);
+  if (!reports.length) return initialReports();
+  const activeId = current.activeId === id ? reports[0].id : current.activeId;
+  return { reports, activeId };
 }

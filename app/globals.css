@@ -16,6 +16,7 @@ body {
  * and for AG Grid (app/(endpoints)/data-grid.tsx), whose themes reference these variables directly.
  */
 :root {
+  --font-geist-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
   --pp-navy: #001c64;
   --pp-blue: #0070e0;
   --pp-blue-dark: #003087;

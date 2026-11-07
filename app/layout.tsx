@@ -1,26 +1,17 @@
 import type { Metadata } from "next";
-import { Geist_Mono } from "next/font/google";
 import "./globals.css";
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: {
-    template: "%s · PayPal × AG Grid",
-    default: "PayPal × AG Grid",
+    template: "%s · LeakLens AI · PayPal × AG Grid",
+    default: "LeakLens AI · PayPal × AG Grid",
   },
-  description: "PayPal sandbox data in AG Grid and AG Studio",
+  description: "Autonomous Revenue Leak Investigator for PayPal Merchants (PayPal × AG Grid)",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className="h-full antialiased font-sans">
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );

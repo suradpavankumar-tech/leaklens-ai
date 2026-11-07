@@ -32,7 +32,14 @@ function TopBar() {
   return (
     <header className="flex h-16 shrink-0 items-center gap-6 border-b border-pp-border bg-white px-6">
       <BrandLockup />
-      <div className="ml-auto flex items-center gap-1 text-pp-navy">
+      <div className="ml-auto flex items-center gap-3 text-pp-navy">
+        <a
+          href="/leaklens"
+          className="px-3 py-1.5 rounded-lg bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white font-semibold text-xs flex items-center gap-1.5 shadow-sm transition-all"
+        >
+          <span className="w-2 h-2 rounded-full bg-cyan-300 animate-pulse" />
+          <span>LeakLens AI Console →</span>
+        </a>
         <span className="inline-flex size-9 items-center justify-center rounded-full" title="Help">
           <HelpIcon />
         </span>
