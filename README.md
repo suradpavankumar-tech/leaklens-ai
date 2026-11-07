@@ -3,11 +3,25 @@
 > **PayPal AI Hackathon 2026 Official Submission**  
 > **Target Category:** AG Grid Sponsor Prize — *Best Use of AG Grid* ($2,000) & General Innovation Track
 
+[![Live on Vercel](https://img.shields.io/badge/Vercel-Live_Production_App-black?style=for-the-badge&logo=vercel)](https://leaklens-ai.vercel.app)
 [![Next.js 16](https://img.shields.io/badge/Next.js-16.3.6-black?style=flat&logo=next.js)](https://nextjs.org/)
 [![AG Grid](https://img.shields.io/badge/AG_Grid-Community_36.2-blue?style=flat&logo=aggrid)](https://www.ag-grid.com/)
 [![AG Studio](https://img.shields.io/badge/AG_Studio-3.0-indigo?style=flat)](https://www.ag-grid.com/ag-studio/)
 [![PayPal REST API](https://img.shields.io/badge/PayPal-REST_API_v1%2Fv2-003087?style=flat&logo=paypal)](https://developer.paypal.com/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.0_Strict-3178C6?style=flat&logo=typescript)](https://www.typescriptlang.org/)
+
+---
+
+## 🌐 Live Production Deployment
+
+Experience LeakLens AI live in production on Vercel:
+
+| Destination | Live URL | Description |
+| :--- | :--- | :--- |
+| 🚀 **Flagship Command Center** | **[leaklens-ai.vercel.app/leaklens](https://leaklens-ai.vercel.app/leaklens)** | Full AI Anomaly Detector, AG Grid Evidence Ledger, and Natural Language Query Console |
+| 📊 **AG Studio Dashboard** | **[leaklens-ai.vercel.app/dashboard](https://leaklens-ai.vercel.app/dashboard)** | Official AG Studio 3.0 visual report builder with our custom registered leak widgets |
+| ⚡ **Home Navigation Hub** | **[leaklens-ai.vercel.app](https://leaklens-ai.vercel.app)** | Portal linking LeakLens AI, AG Studio, and raw PayPal REST endpoint grids |
+| 🎬 **2-Minute Demo Studio** | Accessible on `/leaklens` | Click `▶ 2-Minute Demo Video Studio` at the bottom-right for the automated narrated tour |
 
 ---
 
