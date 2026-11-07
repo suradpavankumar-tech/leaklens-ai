@@ -9,6 +9,7 @@ import { RefundHotspotWidget } from '@/components/leaklens/CustomWidgets/RefundH
 import { RevenueLeakFlowWidget } from '@/components/leaklens/CustomWidgets/RevenueLeakFlowWidget';
 import { EvidenceGridWidget } from '@/components/leaklens/CustomWidgets/EvidenceGridWidget';
 import { InvestigationPanel } from '@/components/leaklens/InvestigationPanel';
+import { DemoTourController } from '@/components/leaklens/DemoTourController';
 import type { LeakLensDataPayload } from '@/lib/leaklens/engine';
 import type {
   InvestigationQueryResult,
@@ -97,7 +98,7 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Top Info Banner */}
-        <div className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
+        <div id="leaklens-hero" className="bg-gradient-to-r from-slate-900 via-slate-900 to-indigo-950/40 border border-slate-800 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
           <div className="absolute right-0 top-0 bottom-0 w-1/3 bg-gradient-to-l from-cyan-500/10 to-transparent pointer-events-none" />
 
           <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -172,7 +173,7 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
 
         {/* Critical Anomaly Alert Box */}
         {selectedAnomaly && (
-          <div className="border border-rose-500/30 bg-rose-950/20 rounded-xl p-5 shadow-lg backdrop-blur-md">
+          <div id="critical-anomaly-box" className="border border-rose-500/30 bg-rose-950/20 rounded-xl p-5 shadow-lg backdrop-blur-md">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
               <div className="flex items-start gap-3">
                 <div className="w-8 h-8 rounded-lg bg-rose-500/20 border border-rose-500/40 flex items-center justify-center shrink-0 mt-0.5">
@@ -271,6 +272,16 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
           LeakLens AI • Official Hackathon Entry for PayPal AI Hackathon 2026 • Powered by AG Grid &amp; AG Studio
         </p>
       </footer>
+
+      {/* Automated 2-Minute Demo Video Studio & Teleprompter */}
+      <DemoTourController
+        onRunSampleQuery={() =>
+          handleRunInvestigation('Why did net revenue drop on AI Predictive Add-On this week?')
+        }
+        onFilterLedger={() => {
+          scrollToLedger();
+        }}
+      />
     </div>
   );
 }
