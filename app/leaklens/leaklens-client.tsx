@@ -56,6 +56,7 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
 
   const handleRunInvestigation = async (query: string) => {
     setInvestigating(true);
+    document.getElementById('investigation-section')?.scrollIntoView({ behavior: 'smooth' });
     try {
       const res = await fetch('/api/leaklens/investigate', {
         method: 'POST',
@@ -76,6 +77,14 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
     } finally {
       setInvestigating(false);
     }
+  };
+
+  const scrollToLedger = () => {
+    document.getElementById('evidence-ledger')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
+  const scrollToWidgets = () => {
+    document.getElementById('widgets-section')?.scrollIntoView({ behavior: 'smooth' });
   };
 
   return (
@@ -135,24 +144,28 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
               value={`$${kpis.totalGrossSales.toLocaleString()}`}
               subtext={`${kpis.successfulPaymentsCount} captured settlements`}
               trend="healthy"
+              onClick={scrollToWidgets}
             />
             <RevenueKpiCard
               label="Realized Retained Cash"
               value={`$${kpis.totalNetSales.toLocaleString()}`}
               subtext="After fees & return deductions"
               trend="neutral"
+              onClick={scrollToWidgets}
             />
             <RevenueKpiCard
               label="Observed Refund Rate"
               value={`${(kpis.refundRate * 100).toFixed(1)}%`}
               baselineComparison={`Historical baseline: ${(kpis.historicalBaselineRefundRate * 100).toFixed(1)}%`}
               trend={kpis.refundRate > 0.08 ? 'critical' : 'warning'}
+              onClick={scrollToLedger}
             />
             <RevenueKpiCard
               label="Excess Capital Leakage"
               value={`+$${kpis.excessRefundLeakAmount.toLocaleString()}`}
               baselineComparison="Above expected baseline drain"
               trend="critical"
+              onClick={scrollToLedger}
             />
           </div>
         )}
@@ -181,6 +194,27 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
                   <p className="text-xs text-slate-300 mt-1 max-w-3xl leading-relaxed">
                     {selectedAnomaly.explanation}
                   </p>
+
+                  <div className="mt-3 flex flex-wrap items-center gap-2.5">
+                    <button
+                      onClick={scrollToLedger}
+                      className="px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-rose-300 hover:text-white border border-rose-500/30 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5 text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+                      </svg>
+                      <span>Audit Evidence in AG Grid Ledger</span>
+                    </button>
+                    <button
+                      onClick={() => handleRunInvestigation(`Why did ${selectedAnomaly.title} occur and how to fix it?`)}
+                      className="px-3 py-1.5 rounded-lg bg-rose-600/20 hover:bg-rose-600/40 text-rose-200 border border-rose-500/40 text-xs font-semibold flex items-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <svg className="w-3.5 h-3.5 text-rose-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                      </svg>
+                      <span>Investigate Root Cause with AI</span>
+                    </button>
+                  </div>
                 </div>
               </div>
 
@@ -198,7 +232,7 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
         )}
 
         {/* AI Investigation Panel */}
-        <section>
+        <section id="investigation-section">
           <InvestigationPanel
             onRunQuery={handleRunInvestigation}
             activeResult={activeInvestigation}
@@ -207,7 +241,7 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
         </section>
 
         {/* Analytical Visualization Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div id="widgets-section" className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {kpis && <AboveBaselineRefundsWidget kpis={kpis} />}
           {kpis && <RevenueLeakFlowWidget kpis={kpis} />}
         </div>
@@ -224,7 +258,7 @@ export function LeakLensClient({ initialData }: LeakLensClientProps) {
         </section>
 
         {/* AG Grid Evidence Ledger */}
-        <section>
+        <section id="evidence-ledger">
           <EvidenceGridWidget
             transactions={transactions}
             selectedAnomalyId={selectedAnomaly?.id}

@@ -7,6 +7,7 @@ interface RevenueKpiCardProps {
   baselineComparison?: string;
   trend?: 'healthy' | 'warning' | 'critical' | 'neutral';
   icon?: React.ReactNode;
+  onClick?: () => void;
 }
 
 export function RevenueKpiCard({
@@ -16,6 +17,7 @@ export function RevenueKpiCard({
   baselineComparison,
   trend = 'neutral',
   icon,
+  onClick,
 }: RevenueKpiCardProps) {
   const trendBorder = {
     healthy: 'border-emerald-500/30 hover:border-emerald-500/60',
@@ -33,7 +35,13 @@ export function RevenueKpiCard({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-xl bg-slate-900/80 p-5 border ${trendBorder} transition-all duration-200 backdrop-blur-md`}
+      onClick={onClick}
+      role={onClick ? 'button' : undefined}
+      tabIndex={onClick ? 0 : undefined}
+      onKeyDown={onClick ? (e) => e.key === 'Enter' && onClick() : undefined}
+      className={`group relative overflow-hidden rounded-xl bg-slate-900/80 p-5 border ${trendBorder} transition-all duration-200 backdrop-blur-md ${
+        onClick ? 'cursor-pointer hover:scale-[1.01] active:scale-[0.99]' : ''
+      }`}
     >
       <div className="flex items-center justify-between">
         <span className="text-xs font-medium uppercase tracking-wider text-slate-400">

@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useRef } from 'react';
 import {
   CellStyleModule,
   ClientSideRowModelModule,
   ColumnAutoSizeModule,
+  CsvExportModule,
   DateFilterModule,
   NumberFilterModule,
   PaginationModule,
@@ -26,6 +27,7 @@ const modules = [
   ColumnAutoSizeModule,
   PaginationModule,
   CellStyleModule,
+  CsvExportModule,
 ];
 
 // Dark midnight theme for LeakLens
@@ -49,10 +51,21 @@ export function EvidenceGridWidget({
   transactions,
   selectedAnomalyId,
 }: EvidenceGridWidgetProps) {
+  const gridRef = useRef<{ api: { exportDataAsCsv: (params?: { fileName?: string }) => void } } | null>(null);
   const [filterType, setFilterType] = useState<'all' | 'flagged' | 'failed'>(
     selectedAnomalyId ? 'flagged' : 'all'
   );
   const [quickFilterText, setQuickFilterText] = useState('');
+
+  const handleExportCsv = () => {
+    try {
+      gridRef.current?.api?.exportDataAsCsv({
+        fileName: `paypal-leaklens-ledger-${new Date().toISOString().slice(0, 10)}.csv`,
+      });
+    } catch (e) {
+      console.warn('Export CSV fallback', e);
+    }
+  };
 
   const rowData = useMemo(() => {
     if (filterType === 'flagged') {
@@ -214,12 +227,23 @@ export function EvidenceGridWidget({
             onChange={(e) => setQuickFilterText(e.target.value)}
             className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-cyan-500 w-36 sm:w-44"
           />
+          <button
+            onClick={handleExportCsv}
+            title="Download audit records as CSV"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-semibold border border-slate-700 transition-colors cursor-pointer shrink-0"
+          >
+            <svg className="w-3.5 h-3.5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            <span>Export CSV</span>
+          </button>
         </div>
       </div>
 
       <div className="mt-4 h-[380px] w-full rounded-lg overflow-hidden border border-slate-800">
         <AgGridProvider modules={modules}>
           <AgGridReact
+            ref={gridRef as any}
             theme={leakLensGridTheme}
             rowData={rowData}
             columnDefs={colDefs}
