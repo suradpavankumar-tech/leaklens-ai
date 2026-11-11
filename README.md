@@ -25,6 +25,17 @@ Experience LeakLens AI live in production on Vercel:
 
 ---
 
+## 📋 Hackathon Provenance & Official Boilerplate Attribution
+
+**LeakLens AI** is an original project built strictly during the **PayPal AI Hackathon 2026 submission period (Oct 1 – Nov 12, 2026)** on top of the official sponsor starter repository: **[`paypaldev/hackathon-paypal-ag-grid-boilerplate`](https://github.com/paypaldev/hackathon-paypal-ag-grid-boilerplate)**.
+
+- **Pre-Hackathon / Upstream Commits (`c2d80f0` → `5de114e`, Sep 27 – Oct 12, 2026):** These commits belong 100% to PayPal & AG Grid's official open-source hackathon starter template (authored by Eddie Jaoude & James Swinton-Bland, ending at exact upstream HEAD SHA [`5de114eb4306e844396022f9ca0558a4937761e2`](https://github.com/paypaldev/hackathon-paypal-ag-grid-boilerplate/commit/5de114eb4306e844396022f9ca0558a4937761e2)). Preserving git history keeps upstream attribution intact.
+- **Original Hackathon Work (`bb2a8b3` → `main`, Nov 7 – Nov 11, 2026):** Every file, algorithm, UI route, AI reasoning module, and custom AG Grid / AG Studio component for **LeakLens AI** was built from scratch during the hackathon period (**28 files changed, +3,765 lines of TypeScript/React code**).
+- **Direct Code Diff Verification:** View the exact hackathon-only code diff on GitHub:  
+  👉 **[Compare Official Boilerplate (`5de114e`) vs. LeakLens AI (`main`)](https://github.com/suradpavankumar-tech/leaklens-ai/compare/5de114e...main)**
+
+---
+
 ## 💡 Elevator Pitch
 **LeakLens AI** turns high-frequency PayPal payment and dispute activity into actionable margin defense. By fusing deterministic financial audit algorithms with an autonomous reasoning engine and high-density **AG Grid** interactive ledgers, LeakLens catches refund anomalies, authorization drop-offs, and fee creep before they drain merchant capital.
 
